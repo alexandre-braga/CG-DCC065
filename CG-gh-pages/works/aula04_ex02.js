@@ -33,15 +33,6 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 var keyboard = new KeyboardState();
 var pos = new THREE.Vector3(0,0,0);
 
-//animation control
-const speed = 1;
-var passos = 1/speed
-var animationOn = false; // control if animation is on or of
-var passoX = 0;
-var passoY = 0;
-var passoZ = 0;
-
-
 //sphere
 const radius = 1
 var sphere = createSphere(radius);
@@ -49,6 +40,13 @@ sphere.position.set(0.0, radius, 0.0);
 scene.add(sphere);
 var posAtual = new THREE.Vector3(sphere.position.getComponent(0), radius, sphere.position.getComponent(2));
 posAtual.copy(sphere.position);
+
+//animation control
+const speed = 0.05;
+var animationOn = false; // control if animation is on or of
+var passoX = 0;
+var passoY = radius;
+var passoZ = 0;
 
 //cria esfera
 function createSphere(radius)
@@ -62,61 +60,60 @@ function createSphere(radius)
 //anima a esfera
 function moveSphere()
 {
+    sphere.matrixAutoUpdate = false;
+    var mat4 = new THREE.Matrix4();
+    sphere.matrix.identity();
+    sphere.matrix.multiply(mat4.makeTranslation(0.0, radius, 0.0));
+    if(animationOn)
+    {
+        console.log("posAtual", posAtual)
+        console.log("spherePosition", sphere.position)
+        console.log("pos", pos)
 
-  sphere.matrixAutoUpdate = false;
-  var mat4 = new THREE.Matrix4();
-  sphere.matrix.identity();
-  posAtual.copy(sphere.position);
-  console.log(posAtual)
-  if(animationOn)
-  {
-    console.log(pos)
+        if (pos.getComponent(0) == posAtual.getComponent(0)){
+            passoX = 0;
+            console.log(passoX);
+        }
+        else if (pos.getComponent(0) > posAtual.getComponent(0)){
+            passoX+=speed;
+        }
+        else if (pos.getComponent(0) < posAtual.getComponent(0)){
+            passoX-=speed;
+        }
 
-    if (pos.getComponent(0) == sphere.position.getComponent(0)){
-        passoX = 0;
-        console.log(passoX);
-    }
-    else if (pos.getComponent(0) > posAtual.getComponent(0)){
-        passoX+=speed;
-        //sphere.matrix.multiply(mat4.makeTranslation(passoX, radius, 0.0));
-    }
-    else if (pos.getComponent(0) < posAtual.getComponent(0)){
-        passoX-=speed;
-    }
+        if (pos.getComponent(1) == posAtual.getComponent(1)){
+            passoY = 0;
+            console.log(passoY);
+        }
+        else if (pos.getComponent(1) > posAtual.getComponent(1)){
+            passoY+=speed;
+        }
+        else if (pos.getComponent(1) < posAtual.getComponent(1)){
+            passoY-=speed;
+        }
 
-    if (pos.getComponent(1) == sphere.position.getComponent(1)){
-        passoY = 0;
-        console.log(passoY);
-    }
-    else if (pos.getComponent(1) > posAtual.getComponent(1)){
-        passoY+=speed;
-    }
-    else if (pos.getComponent(1) < posAtual.getComponent(1)){
-        passoY-=speed;
-    }
-
-    if (pos.getComponent(2) == sphere.position.getComponent(2)){
-        passoZ = 0;
-        console.log(passoZ);
-    }
-    else if (pos.getComponent(2) > posAtual.getComponent(2)){
-        passoZ+=speed;
-    }
-    else if (pos.getComponent(2) < posAtual.getComponent(2)){
-        passoZ-=speed;
+        if (pos.getComponent(2) == posAtual.getComponent(2)){
+            passoZ = 0;
+            console.log(passoZ);
+        }
+        else if (pos.getComponent(2) > posAtual.getComponent(2)){
+            passoZ+=speed;
+        }
+        else if (pos.getComponent(2) < posAtual.getComponent(2)){
+            passoZ-=speed;
+        }
+        sphere.matrix.multiply(mat4.makeTranslation(passoX, passoY, passoZ));
+        sphere.position.setComponent(0, passoX);
+        sphere.position.setComponent(1, passoY);
+        sphere.position.setComponent(2, passoZ);
+        posAtual.copy(sphere.position);
     }
 
-    sphere.matrix.multiply(mat4.makeTranslation(passoX, passoY, passoZ));
-    posAtual.copy(sphere.position);
-  }
-
-  else
-  {
-    sphere.matrix.multiply(mat4.makeTranslation(posAtual.getComponent(0), posAtual.getComponent(1), posAtual.getComponent(2)));
-    console.log(posAtual)
-  }
-
-
+    else
+    {
+        sphere.matrix.multiply(mat4.makeTranslation(posAtual.getComponent(0), posAtual.getComponent(1), posAtual.getComponent(2)));
+        console.log(posAtual)
+    }
 }
 
 var cameraSpeed = 2;
@@ -182,7 +179,7 @@ var controls = new InfoBox();
         };
         this.speed = 0.05;
         this.joint1 = 0;
-        this.joint2 = radius;
+        this.joint2 = 0;
         this.joint3 = 0;
 
         this.move = function(){
@@ -198,7 +195,7 @@ var controls = new InfoBox();
     gui.add(controls, 'joint1', -planeSize/2+radius, planeSize/2-radius)
       .onChange(function() { controls.move() })
       .name("Position X");
-    gui.add(controls, 'joint2', radius, planeSize)
+    gui.add(controls, 'joint2', 0, planeSize)
       .onChange(function() { controls.move() })
       .name("Position Y");
     gui.add(controls, 'joint3', -planeSize/2+radius, planeSize/2-radius)
