@@ -2,7 +2,7 @@ import * as THREE from  '../build/three.module.js';
 import Stats from       '../build/jsm/libs/stats.module.js';
 import {GUI} from       '../build/jsm/libs/dat.gui.module.js';
 import KeyboardState from '../libs/util/KeyboardState.js';
-import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
+//import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
 import {initRenderer,
         initCamera,
         InfoBox,
@@ -15,7 +15,11 @@ var scene = new THREE.Scene();    // Create main scene
 var renderer = initRenderer();    // View function in util/utils
 
 //camera
-var camera = initCamera(new THREE.Vector3(0, 0, 0));
+var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.lookAt(0, 0, 0);
+  camera.position.set(0, 0, 0);
+  camera.up.set( 0, 5, 0 );
+
 var cameraHolder = new THREE.Object3D();
 cameraHolder.add(camera);
 cameraHolder.position.set(0, 10, 30);
@@ -42,7 +46,7 @@ var posAtual = new THREE.Vector3(sphere.position.getComponent(0), radius, sphere
 posAtual.copy(sphere.position);
 
 //animation control
-const speed = 0.05;
+const speed = 0.055;
 var animationOn = false; // control if animation is on or of
 var passoX = 0;
 var passoY = radius;
@@ -201,7 +205,7 @@ var controls = new InfoBox();
     gui.add(controls, 'joint3', -planeSize/2+radius, planeSize/2-radius)
       .onChange(function() { controls.move() })
       .name("Position Z");
-    gui.add(controls, 'onChangeAnimation',true).name("Animation On/Off");
+    gui.add(controls, 'onChangeAnimation',true).name("Mover On/Off");
 
 }
 
