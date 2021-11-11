@@ -31,12 +31,12 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 //var trackballControls = new TrackballControls(camera, renderer.domElement );
 
 var keyboard = new KeyboardState();
-var pos = [0,0,0]
+var pos = new THREE.Vector3(0,0,0);
 
 //animation control
-const speed = 0.5;
+const speed = 1;
 var passos = 1/speed
-var animationOn = true; // control if animation is on or of
+var animationOn = false; // control if animation is on or of
 var passoX = 0;
 var passoY = 0;
 var passoZ = 0;
@@ -47,8 +47,9 @@ const radius = 1
 var sphere = createSphere(radius);
 sphere.position.set(0.0, radius, 0.0);
 scene.add(sphere);
-var posAtual = new THREE.Vector3;
-posAtual = sphere.position;
+var posAtual = new THREE.Vector3(sphere.position.getComponent(0), radius, sphere.position.getComponent(2));
+posAtual.copy(sphere.position);
+
 //cria esfera
 function createSphere(radius)
 {
@@ -65,40 +66,56 @@ function moveSphere()
   sphere.matrixAutoUpdate = false;
   var mat4 = new THREE.Matrix4();
   sphere.matrix.identity();
-
+  posAtual.copy(sphere.position);
+  console.log(posAtual)
   if(animationOn)
   {
-    passoX = (pos[0]-posAtual[0])/passos;
-    passoY = (pos[1]-posAtual[1])/passos;
-    passoZ = (pos[2]-posAtual[2])/passos;
-    if (posAtual[0] > pos[0]){
-        sphere.translateX(-passoX)
-    }
-    else if (posAtual[0] < pos[0]){
-        sphere.translateX(passoX)
-    }
-    if (posAtual[1] > pos[1]){
-        sphere.translateY(-passoY)
-    }
-    else if (posAtual[1] < pos[1]){
-        sphere.translateY(passoY)
-    }
-    if (posAtual[2] > pos[2]){
-        sphere.translateZ(-passoZ)
-    }
-    else if (posAtual[2] < pos[2]){
-        sphere.translateZ(passoZ)
-    }
-    sphere.matrix.multiply(mat4.makeTranslation(passoXYZ));
-    posAtual = sphere.position;
-    console.log(passoX,passoY,passoZ)
-    console.log(posAtual)
+    console.log(pos)
 
+    if (pos.getComponent(0) == sphere.position.getComponent(0)){
+        passoX = 0;
+        console.log(passoX);
+    }
+    else if (pos.getComponent(0) > posAtual.getComponent(0)){
+        passoX+=speed;
+        //sphere.matrix.multiply(mat4.makeTranslation(passoX, radius, 0.0));
+    }
+    else if (pos.getComponent(0) < posAtual.getComponent(0)){
+        passoX-=speed;
+    }
+
+    if (pos.getComponent(1) == sphere.position.getComponent(1)){
+        passoY = 0;
+        console.log(passoY);
+    }
+    else if (pos.getComponent(1) > posAtual.getComponent(1)){
+        passoY+=speed;
+    }
+    else if (pos.getComponent(1) < posAtual.getComponent(1)){
+        passoY-=speed;
+    }
+
+    if (pos.getComponent(2) == sphere.position.getComponent(2)){
+        passoZ = 0;
+        console.log(passoZ);
+    }
+    else if (pos.getComponent(2) > posAtual.getComponent(2)){
+        passoZ+=speed;
+    }
+    else if (pos.getComponent(2) < posAtual.getComponent(2)){
+        passoZ-=speed;
+    }
+
+    sphere.matrix.multiply(mat4.makeTranslation(passoX, passoY, passoZ));
+    posAtual.copy(sphere.position);
   }
+
   else
   {
-    sphere.matrix.multiply(mat4.makeTranslation(posAtual[0], posAtual[1], posAtual[2]));
+    sphere.matrix.multiply(mat4.makeTranslation(posAtual.getComponent(0), posAtual.getComponent(1), posAtual.getComponent(2)));
+    console.log(posAtual)
   }
+
 
 }
 
@@ -169,9 +186,9 @@ var controls = new InfoBox();
         this.joint3 = 0;
 
         this.move = function(){
-            pos[0] = (this.joint1);
-            pos[1] = (this.joint2);
-            pos[2] = (this.joint3);
+            pos.setComponent(0, this.joint1);
+            pos.setComponent(1, this.joint2);
+            pos.setComponent(2, this.joint3);
             moveSphere();
         };
     };
@@ -199,5 +216,6 @@ function render()
   requestAnimationFrame(render);
   //trackballControls.update();
   keyboardUpdate();
+  moveSphere();
   renderer.render(scene, camera) // Render scene
 }
