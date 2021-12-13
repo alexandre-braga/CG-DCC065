@@ -96,6 +96,24 @@ function buildInterface()
     .name("Change Speed");
 }
 
+var ambientColor = "rgb(255,255,255)";
+var ambientSpotLight = new THREE.SpotLight(ambientColor);
+setSpotLight(ambientSpotLight, "ambientSpotLight", new THREE.Vector3(0,60,40));
+
+function setSpotLight(spotLight, lightName, position)
+{
+  spotLight.position.copy(position);
+  spotLight.shadow.mapSize.width = 1024;
+  spotLight.shadow.mapSize.height = 1024;
+  spotLight.angle = degreesToRadians(180);
+  spotLight.castShadow = true;
+  spotLight.decay = 1;
+  spotLight.penumbra = 10.5;
+  spotLight.name = lightName;
+  scene.add(spotLight);
+
+}
+
 buildInterface();
 render();
 function render() {
