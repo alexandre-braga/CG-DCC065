@@ -8,7 +8,8 @@ import {initRenderer,
         InfoBox,
         onWindowResize,
         degreesToRadians,
-        createGroundPlaneWired} from "../libs/util/util.js";
+        createGroundPlaneWired,
+        initDefaultBasicLight} from "../libs/util/util.js";
 
 var stats = new Stats();          // To show FPS information
 var scene = new THREE.Scene();    // Create main scene
@@ -26,7 +27,7 @@ cameraHolder.position.set(0, 10, 30);
 scene.add(cameraHolder);
 
 //light
-scene.add(new THREE.HemisphereLight());
+initDefaultBasicLight(scene);
 
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
@@ -46,7 +47,7 @@ var posAtual = new THREE.Vector3(sphere.position.getComponent(0), radius, sphere
 posAtual.copy(sphere.position);
 
 //animation control
-const speed = 0.055;
+const speed = 0.04;
 var animationOn = false; // control if animation is on or of
 var passoX = 0;
 var passoY = radius;
