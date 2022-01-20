@@ -43,10 +43,8 @@ var trackballControls = new TrackballControls(camera, renderer.domElement);
 
 initDefaultBasicLight(scene, true);
 
-var axesHelper = new THREE.AxesHelper( 12 );
-scene.add( axesHelper );
-
 var speed = 0.05;
+var opcaoTopo = true;
 var animationOn = true; // control if animation is on or of
 var turboGlobal = 0.0;
 
@@ -81,7 +79,12 @@ function buildInterface()
     this.onChangeAnimation = function(){
       animationOn = !animationOn;
     };
-    this.speed = 0.05;
+
+    this.onChangeTopo = function(){
+      opcaoTopo = !opcaoTopo;
+    };
+
+    this.speed = 0.05 ;
 
     this.changeSpeed = function(){
       speed = this.speed;
@@ -91,9 +94,11 @@ function buildInterface()
   // GUI interface
   var gui = new GUI();
   gui.add(controls, 'onChangeAnimation',true).name("Animation On/Off");
-  gui.add(controls, 'speed', 0.00, 5.0)
+  gui.add(controls, 'speed', 0.00, 10.0)
     .onChange(function(e) { controls.changeSpeed() })
     .name("Change Speed");
+  gui.add(controls, 'onChangeTopo',true).name("Alterna Topo");
+
 }
 
 var ambientColor = "rgb(255,255,255)";
@@ -120,6 +125,7 @@ function render() {
   keyboardUpdate();
   stats.update(); // Update FPS
   SpinBlades();
+  eolicTurbine.updateTopo(opcaoTopo);
   trackballControls.update(); // Enable mouse movements
   requestAnimationFrame(render);
   renderer.render(scene, camera); // Render scene

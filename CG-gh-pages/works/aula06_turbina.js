@@ -45,7 +45,6 @@ export class Turbina extends THREE.Group {
     // TopBase
     this.topBase = this.createTopBase(this.height);
     this.positionTopBase(this.height);
-    //this.topBase.visible = false;
 
 
     // TopBaseLathe
@@ -146,8 +145,8 @@ export class Turbina extends THREE.Group {
       bevelSegments: 5
     };
     var extrudeGeometry = new THREE.ExtrudeGeometry(this.topShape(), extrudeSettings);
-    //var topMaterial = new THREE.MeshPhongMaterial({color: "rgb(50,50,255)"});
-    var top = new THREE.Mesh(extrudeGeometry, this.cobaltMaterial);
+    var topMaterial = new THREE.MeshPhongMaterial({color: "rgb(50,100,255)"});
+    var top = new THREE.Mesh(extrudeGeometry, topMaterial);
     return top;
   }
   positionTopBase(height) {
@@ -199,8 +198,8 @@ export class Turbina extends THREE.Group {
 
   createBallMotor() {
     var ballGeometry = new THREE.SphereGeometry(4.2, 50, 50);
-    //var ballMaterial = new THREE.MeshPhongMaterial({color: "rgb(50,50,255)",});
-    var ball = new THREE.Mesh(ballGeometry, this.cobaltMaterial);
+    var ballMaterial = new THREE.MeshPhongMaterial({color: "rgb(50,100,255)",});
+    var ball = new THREE.Mesh(ballGeometry, ballMaterial);
     ball.scale.set(0.55, 0.55, 1);
     return ball;
   }
@@ -249,8 +248,8 @@ export class Turbina extends THREE.Group {
   createTopMotor() {
     var points = [];
     points.push(new THREE.Vector2(0, -3));
-    points.push(new THREE.Vector2(1.0, -2));
-    points.push(new THREE.Vector2(2, -1));
+    points.push(new THREE.Vector2(1.6, -2));
+    points.push(new THREE.Vector2(2.5, -1));
     for (var i = 0; i < 12; i++) {
       points.push(new THREE.Vector2(Math.sin(i*2 / 4.17)+3, i));
     }
@@ -370,6 +369,17 @@ export class Turbina extends THREE.Group {
 
   defaultUpdate(speed) {
     this.spinningAxis.rotateY(degreesToRadians(-speed));
+  }
+
+  updateTopo(opcao){
+    if(opcao == true){
+      this.topBase.visible = true;
+      this.topBaseLathe.visible = false;
+    }
+    else if(opcao == false){
+      this.topBase.visible = false;
+      this.topBaseLathe.visible = true;
+    }
   }
 
 }
