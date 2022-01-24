@@ -16,7 +16,7 @@ var renderer = initRenderer();    // View function in util/utils
 
 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.lookAt(0, 0, 0);
-  camera.position.set(30.0, 30.0, 30.0);
+  camera.position.set(40.0, 50.0, 40.0);
   camera.up.set( 0, 1, 0 );
 
 var ambientLight = new THREE.AmbientLight("rgb(100, 100, 100)");
@@ -35,11 +35,11 @@ scene.add( axesHelper );
 
 //-- Scene Objects -----------------------------------------------------------
 // Cube
-var cylinderSideGeometry = new THREE.CylinderGeometry(5.0, 5.0, 10, 32, 8, true);
+var cylinderSideGeometry = new THREE.CylinderGeometry(5.0, 5.0, 20, 32, 8, true);
 var cylinderMaterial = new THREE.MeshBasicMaterial();
     cylinderMaterial.side = THREE.DoubleSide;
 var cylinder = new THREE.Mesh(cylinderSideGeometry, cylinderMaterial);
-cylinder.position.set(0.0, 5.0, 0.0);
+cylinder.position.set(0.0, 0.0, 0.0);
 
 var cylinderTopGeometry = new THREE.CircleGeometry(5.0, 32);
 var cylinderTopMaterial = new THREE.MeshBasicMaterial();
@@ -51,7 +51,7 @@ top1.position.set(0.0, 10.0, 0.0);
 
 var top2 = new THREE.Mesh(cylinderTopGeometry, cylinderTopMaterial);
 top2.rotateX(degreesToRadians(90));
-top2.position.set(0.0, 0.0, 0.0);
+top2.position.set(0.0, -10.0, 0.0);
 
 scene.add(cylinder);
 scene.add(top1);
