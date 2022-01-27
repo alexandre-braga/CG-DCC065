@@ -2,16 +2,16 @@ import * as THREE from  '../build/three.module.js';
 import {GUI} from       '../build/jsm/libs/dat.gui.module.js';
 import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
 import {TeapotGeometry} from '../build/jsm/geometries/TeapotGeometry.js';
-import {initRenderer,
+import {initRenderer, 
         initDefaultSpotlight,
         createGroundPlane,
-        onWindowResize,
+        onWindowResize, 
         degreesToRadians} from "../libs/util/util.js";
 
 var scene = new THREE.Scene();    // Create main scene
 var renderer = initRenderer();    // View function in util/utils
 
-var light = initDefaultSpotlight(scene, new THREE.Vector3(5.0, 5.0, 5.0)); // Use default light
+var light = initDefaultSpotlight(scene, new THREE.Vector3(5.0, 5.0, 5.0)); // Use default light    
 
 // Main camera
 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -31,8 +31,8 @@ scene.add(groundPlane);
 
 // Create objects
 createTeapot( 2.0,  0.5,  0.0, Math.random() * 0xffffff);
-createTeapot(0.0,  0.5,  2.0, Math.random() * 0xffffff);
-createTeapot(0.0,  0.5, -2.0, Math.random() * 0xffffff);
+createTeapot(0.0,  0.5,  2.0, Math.random() * 0xffffff);  
+createTeapot(0.0,  0.5, -2.0, Math.random() * 0xffffff);    
 
 //-------------------------------------------------------------------------------
 // Setting virtual camera
@@ -40,9 +40,9 @@ createTeapot(0.0,  0.5, -2.0, Math.random() * 0xffffff);
 var lookAtVec   = new THREE.Vector3( 0.0, 0.0, 0.0 );
 var camPosition = new THREE.Vector3( 3.7, 2.2, 1.0 );
 var upVec       = new THREE.Vector3( 0.0, 1.0, 0.0 );
-var vcWidth = 400;
-var vcHeidth = 300;
-var projectionChanged = false;
+var vcWidth = 400; 
+var vcHeidth = 300; 
+var projectionChanged = false; 
 var virtualCamera = new THREE.PerspectiveCamera(45, vcWidth/vcHeidth, 1.0, 20.0);
   virtualCamera.position.copy(camPosition);
   virtualCamera.up.copy(upVec);
@@ -61,8 +61,8 @@ render();
 
 function createCameraObject()
 {
-  var matBody = new THREE.MeshPhongMaterial({color:"rgb(255, 0, 0)"});
-  var matLens = new THREE.MeshPhongMaterial({color:"rgb(255, 255, 0)"});
+  var matBody = new THREE.MeshPhongMaterial({color:"rgb(255, 0, 0)"});    
+  var matLens = new THREE.MeshPhongMaterial({color:"rgb(255, 255, 0)"});        
 
   var cBody = new THREE.BoxGeometry(.2, .2, .2);
   var body = new THREE.Mesh(cBody, matBody);
@@ -88,30 +88,30 @@ function createTeapot(x, y, z, color )
   scene.add(obj);
 }
 
-// Updates de 3D object that represents the virtual camera
+// Updates de 3D object that represents the virtual camera 
 // and the camera helper
 function updateVirtualCameraObject()
 {
   //-- Update camera 3D representation --
-  var cwd = new THREE.Vector3();
+  var cwd = new THREE.Vector3();    
   virtualCamera.getWorldPosition(cwd);
   cameraObj.position.copy(cwd);
   cameraObj.setRotationFromQuaternion(virtualCamera.quaternion); // Get camera rotation
 
-  cameraHelper.update();
+  cameraHelper.update();  
 }
 
 function updateCamera()
 {
   //-- Update virtual camera settings --
-  virtualCamera.position.copy(camPosition);
+  virtualCamera.position.copy(camPosition); 
   virtualCamera.up.copy(upVec);
-  virtualCamera.lookAt(lookAtVec);
-
+  virtualCamera.lookAt(lookAtVec); 
+  
   // Update projection only if fov, near or far plane change
   if(projectionChanged)
   {
-    virtualCamera.updateProjectionMatrix();
+    virtualCamera.updateProjectionMatrix(); 
     projectionChanged = false;
   }
 
@@ -125,32 +125,32 @@ function buildInterface()
   // Interface
   var controls = new function ()
   {
-    this.upAngle = 0;
+    this.upAngle = 0;   
 
     this.onUpdateNear = function(){
       if(virtualCamera.near >= virtualCamera.far) // set near always smaller than far
         virtualCamera.far = virtualCamera.near+10;
-      projectionChanged = true;
-      updateCamera();
-    };
+      projectionChanged = true;        
+      updateCamera();                
+    };     
 
     this.onUpdateFar = function(){
       if(virtualCamera.far <= virtualCamera.near-0.1) // set far always greater than near
         virtualCamera.near = 0.1;
-      projectionChanged = true;
-      updateCamera();
-    };
+      projectionChanged = true;        
+      updateCamera(); 
+    };        
 
     this.onUpdateFov = function(){
       projectionChanged = true;
-      updateCamera();
-    };
+      updateCamera(); 
+    };   
 
     this.onUpdateUpAngle = function(){
       upVec.x = Math.sin(degreesToRadians(this.upAngle));
-      upVec.y = Math.cos(degreesToRadians(this.upAngle));
-      updateCamera();
-    };
+      upVec.y = Math.cos(degreesToRadians(this.upAngle));             
+      updateCamera(); 
+    };        
   }
 
   function makeXYZGUI(gui, vector3, name, onChangeFn) {
@@ -159,12 +159,12 @@ function buildInterface()
     folder.add(vector3, 'y', -10, 10).onChange(onChangeFn);
     folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
     folder.open();
-  }
-
+  }  
+      
   var gui = new GUI();
 
   var vcFolder = gui.addFolder("Virtual Camera");
-  vcFolder.open();
+  vcFolder.open();    
   vcFolder.add(cameraHelper, 'visible', true)
     .name("Camera Helper");
   vcFolder.add(virtualCamera, 'near', .1, 30, 0.1)
@@ -172,15 +172,15 @@ function buildInterface()
     .name("Near plane");
   vcFolder.add(virtualCamera, 'far', .1, 30, 0.1)
     .onChange(function() { controls.onUpdateFar()  })
-    .name("Far plane");
+    .name("Far plane");    
   vcFolder.add(virtualCamera, 'fov', 10, 90)
     .onChange(function() { controls.onUpdateFov()  })
     .name("Fov (degrees)");
   vcFolder.add(controls, 'upAngle', 0, 360)
     .onChange(function() { controls.onUpdateUpAngle() })
-    .name("Up (degrees)");
-  makeXYZGUI(vcFolder, camPosition, 'Position', updateCamera);
-  makeXYZGUI(vcFolder, lookAtVec, 'Look At', updateCamera);
+    .name("Up (degrees)");      
+  makeXYZGUI(vcFolder, camPosition, 'Position', updateCamera);  
+  makeXYZGUI(vcFolder, lookAtVec, 'Look At', updateCamera);    
 }
 
 function controlledRender()
@@ -189,18 +189,18 @@ function controlledRender()
   var height = window.innerHeight;
 
   // Set main viewport
-  renderer.setViewport(0, 0, width, height); // Reset viewport
+  renderer.setViewport(0, 0, width, height); // Reset viewport    
   renderer.setScissorTest(false); // Disable scissor to paint the entire window
-  renderer.setClearColor("rgb(80, 70, 170)");
+  renderer.setClearColor("rgb(80, 70, 170)");    
   renderer.clear();   // Clean the window
-  renderer.render(scene, camera);
+  renderer.render(scene, camera);   
 
-  // Set virtual camera viewport
-  var offset = 30;
-  renderer.setViewport(offset, height-vcHeidth-offset, vcWidth, vcHeidth);  // Set virtual camera viewport
+  // Set virtual camera viewport 
+  var offset = 30; 
+  renderer.setViewport(offset, height-vcHeidth-offset, vcWidth, vcHeidth);  // Set virtual camera viewport  
   renderer.setScissor(offset, height-vcHeidth-offset, vcWidth, vcHeidth); // Set scissor with the same size as the viewport
   renderer.setScissorTest(true); // Enable scissor to paint only the scissor are (i.e., the small viewport)
-  renderer.setClearColor("rgb(60, 50, 150)");  // Use a darker clear color in the small viewport
+  renderer.setClearColor("rgb(60, 50, 150)");  // Use a darker clear color in the small viewport 
   renderer.clear(); // Clean the small viewport
   renderer.render(scene, virtualCamera);  // Render scene of the virtual camera
 }

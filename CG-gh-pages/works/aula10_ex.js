@@ -1,14 +1,23 @@
 import * as THREE from  '../build/three.module.js';
 import {GUI} from       '../build/jsm/libs/dat.gui.module.js';
 import {ARjs}    from  '../libs/AR/ar.js';
+import {GLTFLoader} from '../build/jsm/loaders/GLTFLoader.js';
+import KeyboardState from '../libs/util/KeyboardState.js';
 import {InfoBox,
-		initDefaultSpotlight} from "../libs/util/util.js";
+        SecondaryBox,
+        initDefaultSpotlight,
+        createGroundPlane,
+        getMaxSize,
+        onWindowResize,
+        degreesToRadians,
+        lightFollowingCamera} from "../libs/util/util.js";
 
 var renderer	= new THREE.WebGLRenderer({antialias: true, alpha: true});
 	renderer.setSize( 640, 480 );
 	renderer.shadowMap.type = THREE.VSMShadowMap;
 	renderer.shadowMap.enabled = true;
-	
+var keyboard = new KeyboardState();
+
 document.body.appendChild( renderer.domElement );
 // init scene and camera
 var scene	= new THREE.Scene();
@@ -25,7 +34,7 @@ showInformation();
 // Handle arToolkitSource
 // More info: https://ar-js-org.github.io/AR.js-Docs/marker-based/
 //var arToolkitSource = new THREEx.ArToolkitSource({
-var arToolkitSource = new ARjs.Source({	
+var arToolkitSource = new ARjs.Source({
 	// to read from the webcam
 	sourceType : 'webcam',
 
@@ -86,7 +95,7 @@ onRenderFcts.push(function(){
 //
 // init controls for camera
 //var markerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
-var markerControls = new ARjs.MarkerControls(arToolkitContext, camera, {	
+var markerControls = new ARjs.MarkerControls(arToolkitContext, camera, {
 	type : 'pattern',
 	patternUrl : '../libs/AR/data/patt.kanji',
 	changeMatrixMode: 'cameraTransformMatrix' // as we controls the camera, set changeMatrixMode: 'cameraTransformMatrix'
@@ -97,14 +106,92 @@ scene.visible = false
 //----------------------------------------------------------------------------
 // Adding object to the scene
 
+var light = initDefaultSpotlight(scene, new THREE.Vector3(2, 3, 2)); // Use default light
+var lightSphere = createSphere(0.1, 10, 10);
+  lightSphere.position.copy(light.position);
+  lightSphere.visible = false;
+scene.add(lightSphere);
+
+var groundPlane = createGroundPlane(4.0, 4.0, 80, 80); // width and height
+  groundPlane.rotateX(degreesToRadians(-90));
+  groundPlane.material.opacity = 0.3;
+  groundPlane.material.transparent = true;
+  groundPlane.visible = true;
+scene.add(groundPlane);
+
+var gltfArray = new Array();
+var playAction = true;
+var mixer = new Array();
+
+loadGLTFFile('../assets/objects/', 'dog', 2.0, 0, true);
+function loadGLTFFile(modelPath, modelFolder, desiredScale, angle, visibility)
+{
+  var loader = new GLTFLoader( );
+  loader.load( modelPath + modelFolder + '/scene.gltf', function ( gltf ) {
+    var obj = gltf.scene;
+    obj.visible = visibility;
+    obj.name = modelFolder;
+    obj.traverse( function ( child ) {
+      if ( child ) {
+          child.castShadow = true;
+      }
+    });
+    obj.traverse( function( node )
+    {
+      if( node.material ) node.material.side = THREE.DoubleSide;
+    });
+
+    var obj = normalizeAndRescale(obj, desiredScale);
+    var obj = fixPosition(obj);
+    obj.rotateY(degreesToRadians(angle));
+
+    scene.add ( obj );
+    gltfArray.push( obj );
+
+    var mixerLocal = new THREE.AnimationMixer(obj);
+    mixerLocal.clipAction( gltf.animations[0] ).play();
+    mixer.push(mixerLocal);
+
+    });
+}
+
+// Normalize scale and multiple by the newScale
+function normalizeAndRescale(obj, newScale)
+{
+  var scale = getMaxSize(obj); // Available in 'utils.js'
+  obj.scale.set(newScale * (1.0/scale),
+                newScale * (1.0/scale),
+                newScale * (1.0/scale));
+  return obj;
+}
+
+function fixPosition(obj)
+{
+  // Fix position of the object over the ground plane
+  var box = new THREE.Box3().setFromObject( obj );
+  if(box.min.y > 0)
+    obj.translateY(-box.min.y);
+  else
+    obj.translateY(-1*box.min.y);
+  return obj;
+}
+
+function createSphere(radius, widthSegments, heightSegments)
+{
+  var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments, 0, Math.PI * 2, 0, Math.PI);
+  var material = new THREE.MeshBasicMaterial({color:"rgb(255,255,50)"});
+  var object = new THREE.Mesh(geometry, material);
+    object.castShadow = true;
+	//object.visible = false;
+  return object;
+}
+
+
 // add a torus knot
 var cubeKnot = new THREE.Object3D();
 createCubeKnot();
+cubeKnot.visible = false;
 scene.add( cubeKnot );
-
-var torus = new THREE.Object3D();
-createTorus();
-scene.add( torus );
 
 // controls which object should be rendered
 var firstObject = true;
@@ -115,13 +202,17 @@ var controls = new function ()
 		firstObject = !firstObject;
 		if(firstObject)
 		{
-			cubeKnot.visible = true;
-			torus.visible = false;
+			gltfArray[0].visible = true;
+			groundPlane.visible = true;
+			lightSphere.visible = true;
+			cubeKnot.visible = false;
 		}
 		else
 		{
-			cubeKnot.visible = false;
-			torus.visible = true;
+			gltfArray[0].visible = false;
+			groundPlane.visible = false;
+			lightSphere.visible = true;
+			cubeKnot.visible = true;
 		}
 	};
 };
@@ -138,23 +229,6 @@ gui.add(controls, 'onChangeObject').name("Change Object");
 onRenderFcts.push(function(){
 	renderer.render( scene, camera );
 })
-
-function createTorus()
-{
-	var light = initDefaultSpotlight(scene, new THREE.Vector3(25, 30, 20)); // Use default light
-	var geometry = new THREE.TorusGeometry(0.6, 0.2, 20, 20, Math.PI * 2);
-	var objectMaterial = new THREE.MeshPhongMaterial({
-		color:"rgb(255,0,0)",     // Main color of the object
-		shininess:"200",            // Shininess of the object
-		specular:"rgb(255,255,255)" // Color of the specular component
-	});
-	var object = new THREE.Mesh(geometry, objectMaterial);
-		object.position.set(0.0, 0.2, 0.0);
-		object.rotation.x = Math.PI/2;
-
-	torus.add(object);
-	torus.visible = false;
-}
 
 function createCubeKnot()
 {
@@ -189,12 +263,36 @@ function showInformation()
 		controls.show();
 }
 
+function keyboardUpdate() {
+    keyboard.update();
+
+    if (keyboard.pressed("A")) {
+        groundPlane.rotateZ(degreesToRadians(2));
+		gltfArray[0].rotateY(degreesToRadians(2));
+    }
+    else if (keyboard.pressed("D")) {
+        groundPlane.rotateZ(degreesToRadians(-2));
+		gltfArray[0].rotateY(degreesToRadians(-2));
+	}
+
+    if (keyboard.pressed("W")) {
+        groundPlane.rotateX(degreesToRadians(2));
+		gltfArray[0].rotateX(degreesToRadians(2));
+
+    }
+    else if (keyboard.pressed("S")) {
+        groundPlane.rotateX(degreesToRadians(-2));
+        gltfArray[0].rotateX(degreesToRadians(-2));
+    }
+}
+
 // run the rendering loop
 requestAnimationFrame(function animate(nowMsec)
 {
-	var lastTimeMsec= null;	
+	var lastTimeMsec= null;
 	// keep looping
 	requestAnimationFrame( animate );
+	keyboardUpdate();
 	// measure time
 	lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
 	var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
@@ -202,5 +300,10 @@ requestAnimationFrame(function animate(nowMsec)
 	// call each update function
 	onRenderFcts.forEach(function(onRenderFct){
 		onRenderFct(deltaMsec/1000, nowMsec/1000)
+		// Animation control
+		if (playAction) {
+			for(var i = 0; i<mixer.length; i++)
+				mixer[i].update( deltaMsec/5000 );
+		}
 	})
 })
