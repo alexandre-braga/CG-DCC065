@@ -14,10 +14,10 @@ import {InfoBox,
 
 var renderer	= new THREE.WebGLRenderer({antialias: true, alpha: true});
 	renderer.setSize( 640, 480 );
-	renderer.shadowMap.type = THREE.VSMShadowMap;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	renderer.shadowMap.enabled = true;
-var keyboard = new KeyboardState();
 
+var keyboard = new KeyboardState();
 document.body.appendChild( renderer.domElement );
 // init scene and camera
 var scene	= new THREE.Scene();
@@ -36,15 +36,15 @@ showInformation();
 //var arToolkitSource = new THREEx.ArToolkitSource({
 var arToolkitSource = new ARjs.Source({
 	// to read from the webcam
-	sourceType : 'webcam',
+	//sourceType : 'webcam',
 
 	// to read from an image
 	//sourceType : 'image',
 	//sourceUrl : '../assets/AR/kanjiScene.jpg',
 
 	// to read from a video
-	// sourceType : 'video',
-	// sourceUrl : '../assets/AR/kanjiScene.mp4'
+	sourceType : 'video',
+	sourceUrl : '../assets/AR/kanjiScene.mp4'
 })
 
 arToolkitSource.init(function onReady(){
@@ -106,17 +106,18 @@ scene.visible = false
 //----------------------------------------------------------------------------
 // Adding object to the scene
 
-var light = initDefaultSpotlight(scene, new THREE.Vector3(2, 3, 2)); // Use default light
+var light = initDefaultSpotlight(scene, new THREE.Vector3(-3, 4, 2)); // Use default light
 var lightSphere = createSphere(0.1, 10, 10);
   lightSphere.position.copy(light.position);
   lightSphere.visible = false;
 scene.add(lightSphere);
 
-var groundPlane = createGroundPlane(4.0, 4.0, 80, 80); // width and height
+var groundPlane = createGroundPlane(2.0, 2.0); // width and height
   groundPlane.rotateX(degreesToRadians(-90));
-  groundPlane.material.opacity = 0.3;
   groundPlane.material.transparent = true;
+  groundPlane.material.opacity = 0.3;
   groundPlane.visible = true;
+  groundPlane.castShadow = false;
 scene.add(groundPlane);
 
 var gltfArray = new Array();
@@ -182,7 +183,7 @@ function createSphere(radius, widthSegments, heightSegments)
   var material = new THREE.MeshBasicMaterial({color:"rgb(255,255,50)"});
   var object = new THREE.Mesh(geometry, material);
     object.castShadow = true;
-	//object.visible = false;
+	object.visible = false;
   return object;
 }
 
